@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.repository.UserRepository;
-import com.example.demo.model.User;
+import com.example.demo.model.MyUser;
 
 @Service
 public class UserService {
@@ -16,19 +16,19 @@ public class UserService {
     
     private final int startBalance = 1000;
     
-    public User registerUser(String login, String passwordHash) {
-        User user = new User();
+    public MyUser registerUser(String login, String passwordHash) {
+        MyUser user = new MyUser();
         user.setLogin(login);
         user.setPasswordHash(passwordHash);
         user.setBalance(startBalance);
         return userRepository.save(user);
     }
 
-    public Optional<User> getUserByLogin(String login) {
+    public Optional<MyUser> getUserByLogin(String login) {
         return userRepository.findByLogin(login);
     }
 
-    public void updateUserData(User user) {
+    public void updateUserData(MyUser user) {
         userRepository.save(user);
     }
 }

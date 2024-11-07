@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,10 +29,7 @@ public class PaymentController {
     }
 
     @GetMapping("/history")
-    public Page<Payment> getHistory(@RequestParam Long userId, @RequestParam int page, @RequestParam int size) {
-        return paymentService.getPayments(userId, PageRequest.of(page, size));
+    public List<Payment> getHistory(@RequestParam String login, @RequestParam int page, @RequestParam int size) {
+        return paymentService.getPayments(login, PageRequest.of(page, size));
     }
-    
-    
-
 }

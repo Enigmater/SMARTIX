@@ -20,7 +20,5 @@ public class Payment {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    // Геттеры и сеттеры
+    private MyUser user;
 }
