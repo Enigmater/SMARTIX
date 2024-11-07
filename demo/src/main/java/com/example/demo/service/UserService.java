@@ -28,7 +28,16 @@ public class UserService {
         return userRepository.findByLogin(login);
     }
 
-    public void updateUserData(MyUser user) {
-        userRepository.save(user);
+    public MyUser partialUpdateUserData(String login, String fullName, String email, String gender, String birthDate) {
+        Optional<MyUser> userOpt = userRepository.findByLogin(login);
+        if (!userOpt.isPresent()) throw new IllegalArgumentException("Пользователь не найден");
+        MyUser user = userOpt.get();
+
+        if (fullName != null) user.setFullName(fullName);
+        if (email != null) user.setEmail(email);
+        if (gender != null) user.setGender(gender);
+        if (birthDate != null) user.setBirthDate(birthDate);
+
+        return userRepository.save(user);          
     }
 }

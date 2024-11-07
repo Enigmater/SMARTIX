@@ -23,7 +23,6 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-	 // PostgreSQL JDBC Driver
     implementation("org.postgresql:postgresql:42.5.0")
 
 	compileOnly("org.projectlombok:lombok:1.18.30")

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -24,24 +23,20 @@ public class PaymentService {
 
     public Payment makePayment(String login, String phoneNumber, double amount) {
         Optional<MyUser> optionalUser = userRepository.findByLogin(login);
-        if (optionalUser.isPresent()) {
-            MyUser user = optionalUser.get();
-            if (user.getBalance() >= amount) {
-                user.setBalance(user.getBalance() - amount);
-                Payment payment = new Payment();
-                payment.setPhoneNumber(phoneNumber);
-                payment.setAmount(amount); 
-                payment.setDate(java.time.LocalDateTime.now());
-                payment.setUser(user);
+        if (!optionalUser.isPresent()) throw new IllegalArgumentException("Недостаточно средств на счете!");
+        MyUser user = optionalUser.get();
+        if (user.getBalance() < amount) throw new IllegalArgumentException("Пользователь не найден!");
+        user.setBalance(user.getBalance() - amount);
+        Payment payment = new Payment();
+        payment.setPhoneNumber(phoneNumber);
+        payment.setAmount(amount); 
+        payment.setDate(java.time.LocalDateTime.now());
+        payment.setUser(user);
 
-                paymentRepository.save(payment);
-                userRepository.save(user);
+        paymentRepository.save(payment);
+        userRepository.save(user);
 
-                return payment;
-            }
-            else throw new IllegalArgumentException("Недостаточно средств на счете!");
-        }
-        else throw new IllegalArgumentException("Пользователь не найден!");
+        return payment;
     }
 
     public List<Payment> getPayments(String login, Pageable pageable) {
