@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -65,6 +66,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
     void testGetBalance_UserFound() throws Exception {
         when(userService.getUserByLogin("testuser")).thenReturn(Optional.of(testUser));
 
@@ -75,6 +77,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
     void testGetBalance_UserNotFound() throws Exception {
         when(userService.getUserByLogin("nonexistentuser")).thenReturn(Optional.empty());
 
@@ -85,6 +88,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
     void testPartialUpdateUserData_FullNameUpdated() throws Exception {
         MyUser updataedUser = testUser;
         updataedUser.setFullName("Updated Name");
@@ -102,6 +106,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
     void testPartialUpdateUserData_EmailUpdated() throws Exception {
         MyUser updataedUser = testUser;
         updataedUser.setEmail("updated@example.com");
@@ -119,6 +124,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
     void testPartialUpdateUserData_UserNotFound() throws Exception {
         when(userService.partialUpdateUserData("nonexistentuser", "Updated Name", "updated@example.com", "Female", "1990-12-31"))
                 .thenThrow(new IllegalArgumentException("Пользователь не найден"));
