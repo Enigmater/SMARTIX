@@ -23,9 +23,9 @@ public class PaymentService {
 
     public Payment makePayment(String login, String phoneNumber, double amount) {
         Optional<MyUser> optionalUser = userRepository.findByLogin(login);
-        if (!optionalUser.isPresent()) throw new IllegalArgumentException("Недостаточно средств на счете!");
+        if (!optionalUser.isPresent()) throw new IllegalArgumentException("Пользователь не найден!");
         MyUser user = optionalUser.get();
-        if (user.getBalance() < amount) throw new IllegalArgumentException("Пользователь не найден!");
+        if (user.getBalance() < amount) throw new IllegalArgumentException("Недостаточно средств на счете!");
         user.setBalance(user.getBalance() - amount);
         Payment payment = new Payment();
         payment.setPhoneNumber(phoneNumber);
