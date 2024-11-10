@@ -27,7 +27,7 @@ public class SecurityConfig {
             .httpBasic(Customizer.withDefaults())
             .exceptionHandling(exceptionHandling ->
                 exceptionHandling.authenticationEntryPoint((request, response, authException) -> {
-                    response.sendError(401, "Unauthorized"); // Отправка кастомного ответа при неавторизованном доступе
+                    response.sendError(401, "Unauthorized");
                 }))
             .userDetailsService(customUserDetailService);
         http.addFilterBefore(loginConsistencyFilter, UsernamePasswordAuthenticationFilter.class);

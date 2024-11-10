@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @PostMapping("/pay")
-    public Payment makePayment(@RequestParam String login, @RequestParam String phoneNumber, @RequestParam double amount) {  
+    public Payment makePayment(@RequestParam String login, @RequestParam String phoneNumber, @RequestParam BigDecimal amount) {  
         return paymentService.makePayment(login, phoneNumber, amount);
     }
 

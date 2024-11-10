@@ -13,7 +13,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -21,11 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.demo.model.*;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.security.SecurityConfig;
 import com.example.demo.service.*;
 
-
-import java.util.Base64;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,23 +43,16 @@ public class PaymentControllerTest {
     private MyUser testUser;
     private Payment testPayment;
 
-    // Функция для получения заголовка авторизации
-    private String getBasicAuthHeader(String login, String password) {
-        String credentials = login + ":" + password;
-        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
-        return "Basic " + encodedCredentials;
-    }
-
     @BeforeEach
     void setUp() {
         testUser = new MyUser();
         testUser.setLogin("testuser");
         testUser.setPasswordHash("testpassword");
-        testUser.setBalance(100.0);
+        testUser.setBalance(new BigDecimal(100));
 
         testPayment = new Payment();
         testPayment.setPhoneNumber("1234567890");
-        testPayment.setAmount(50.0);
+        testPayment.setAmount(new BigDecimal(50));
         testPayment.setUser(testUser);
         testPayment.setDate(java.time.LocalDateTime.now());
     }
@@ -71,7 +61,7 @@ public class PaymentControllerTest {
     @WithMockUser(username = "testuser", password = "testpassword")
     void testMakePayment_Success() throws Exception {
         when(userRepository.findByLogin(anyString())).thenReturn(Optional.of(testUser));
-        when(paymentService.makePayment(anyString(), anyString(), anyDouble())).thenReturn(testPayment);
+        when(paymentService.makePayment(anyString(), anyString(), any())).thenReturn(testPayment);
 
         mockMvc.perform(post("/payments/pay")
                         .param("login", testUser.getLogin())
@@ -83,14 +73,14 @@ public class PaymentControllerTest {
                 .andExpect(jsonPath("$.amount").value(50.0))
                 .andExpect(jsonPath("$.user.login").value(testUser.getLogin()));
 
-        verify(paymentService, times(1)).makePayment(anyString(), anyString(), anyDouble());
+        verify(paymentService, times(1)).makePayment(anyString(), anyString(), any());
     }
 
     @Test
     @WithMockUser(username = "testuser", password = "testpassword")
     void testMakePayment_UserNotFound() throws Exception {
         when(userRepository.findByLogin("nonexistentuser")).thenReturn(Optional.empty());
-        when(paymentService.makePayment(anyString(), anyString(), anyDouble())).thenThrow(new IllegalArgumentException("Пользователь не найден!"));
+        when(paymentService.makePayment(anyString(), anyString(), any())).thenThrow(new IllegalArgumentException("Пользователь не найден!"));
 
         mockMvc.perform(post("/payments/pay")
                         .param("login", "nonexistentuser")
@@ -100,13 +90,13 @@ public class PaymentControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Пользователь не найден!"));
 
-        verify(paymentService, times(1)).makePayment(anyString(), anyString(), anyDouble());
+        verify(paymentService, times(1)).makePayment(anyString(), anyString(), any());
     }
     
     @Test
     @WithMockUser(username = "testuser", password = "testpassword")
     void testMakePayment_InsufficientFunds() throws Exception {
-        when(paymentService.makePayment(anyString(), anyString(), anyDouble()))
+        when(paymentService.makePayment(anyString(), anyString(), any()))
                 .thenThrow(new IllegalArgumentException("Недостаточно средств на счете!"));
 
         mockMvc.perform(post("/payments/pay")
@@ -117,7 +107,7 @@ public class PaymentControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Недостаточно средств на счете!"));
 
-        verify(paymentService, times(1)).makePayment(anyString(), anyString(), anyDouble());
+        verify(paymentService, times(1)).makePayment(anyString(), anyString(), any());
     }
 
     @Test

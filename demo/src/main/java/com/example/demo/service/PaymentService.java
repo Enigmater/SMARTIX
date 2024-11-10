@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,12 +22,12 @@ public class PaymentService {
     @Autowired
     private UserRepository userRepository;
 
-    public Payment makePayment(String login, String phoneNumber, double amount) {
+    public Payment makePayment(String login, String phoneNumber, BigDecimal amount) {
         Optional<MyUser> optionalUser = userRepository.findByLogin(login);
         if (!optionalUser.isPresent()) throw new IllegalArgumentException("Пользователь не найден!");
         MyUser user = optionalUser.get();
-        if (user.getBalance() < amount) throw new IllegalArgumentException("Недостаточно средств на счете!");
-        user.setBalance(user.getBalance() - amount);
+        if (user.getBalance().compareTo(amount) < 0) throw new IllegalArgumentException("Недостаточно средств на счете!");
+        user.setBalance(user.getBalance().subtract(amount));
         Payment payment = new Payment();
         payment.setPhoneNumber(phoneNumber);
         payment.setAmount(amount); 

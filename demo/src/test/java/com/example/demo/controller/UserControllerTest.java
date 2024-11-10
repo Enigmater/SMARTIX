@@ -11,8 +11,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,11 +43,11 @@ public class UserControllerTest {
         testUser = new MyUser();
         testUser.setLogin("testuser");
         testUser.setPasswordHash("password123");
-        testUser.setBalance(1000);
+        testUser.setBalance(new BigDecimal(1000));
         testUser.setFullName("Test User");
         testUser.setEmail("testuser@example.com");
-        testUser.setGender("Male");
-        testUser.setBirthDate("2000-01-01");
+        testUser.setGender('M');
+        testUser.setBirthDate(LocalDate.parse("2000-01-01"));
     }
 
     @Test
@@ -73,7 +77,7 @@ public class UserControllerTest {
         mockMvc.perform(get("/users/balance")
                         .param("login", "testuser"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Баланс пользователя testuser: 1000.0"));
+                .andExpect(content().string("Баланс пользователя testuser: " + testUser.getBalance()));
     }
 
     @Test
@@ -101,7 +105,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fullName").value("Updated Name"))
                 .andExpect(jsonPath("$.email").value("testuser@example.com"))
-                .andExpect(jsonPath("$.gender").value("Male"))
+                .andExpect(jsonPath("$.gender").value("M"))
                 .andExpect(jsonPath("$.birthDate").value("2000-01-01"));
     }
 
@@ -119,21 +123,21 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("updated@example.com"))
                 .andExpect(jsonPath("$.fullName").value("Test User"))
-                .andExpect(jsonPath("$.gender").value("Male"))
+                .andExpect(jsonPath("$.gender").value("M"))
                 .andExpect(jsonPath("$.birthDate").value("2000-01-01"));
     }
 
     @Test
     @WithMockUser(username = "testuser", password = "testpassword")
     void testPartialUpdateUserData_UserNotFound() throws Exception {
-        when(userService.partialUpdateUserData("nonexistentuser", "Updated Name", "updated@example.com", "Female", "1990-12-31"))
+        when(userService.partialUpdateUserData(any(), any(), any(), any(), any()))
                 .thenThrow(new IllegalArgumentException("Пользователь не найден"));
 
         mockMvc.perform(patch("/users/update")
                         .param("login", "nonexistentuser")
                         .param("fullName", "Updated Name")
                         .param("email", "updated@example.com")
-                        .param("gender", "Female")
+                        .param("gender", "F")
                         .param("birthDate", "1990-12-31"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Пользователь не найден"));

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.model.MyUser;
 import com.example.demo.service.UserService;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +39,8 @@ public class UserController {
     public MyUser partialUpdateUserData(@RequestParam String login,
                                         @RequestParam(required = false) String fullName,
                                         @RequestParam(required = false) String email,
-                                        @RequestParam(required = false) String gender,
-                                        @RequestParam(required = false) String birthDate) {
+                                        @RequestParam(required = false) Character gender,
+                                        @RequestParam(required = false) LocalDate birthDate) {
         return userService.partialUpdateUserData(login, fullName, email, gender, birthDate);
     }
     

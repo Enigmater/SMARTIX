@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     
-    private final int startBalance = 1000;
+    private final BigDecimal startBalance = new BigDecimal(1000);
     
     public MyUser registerUser(String login, String passwordHash) {
         MyUser user = new MyUser();
@@ -28,7 +30,7 @@ public class UserService {
         return userRepository.findByLogin(login);
     }
 
-    public MyUser partialUpdateUserData(String login, String fullName, String email, String gender, String birthDate) {
+    public MyUser partialUpdateUserData(String login, String fullName, String email, Character gender, LocalDate birthDate) {
         Optional<MyUser> userOpt = userRepository.findByLogin(login);
         if (!userOpt.isPresent()) throw new IllegalArgumentException("Пользователь не найден");
         MyUser user = userOpt.get();
@@ -41,5 +43,5 @@ public class UserService {
         return userRepository.save(user);          
     }
 
-    
+
 }
