@@ -30,6 +30,9 @@ dependencies {
 
 	compileOnly("org.projectlombok:lombok:1.18.30")
 	annotationProcessor("org.projectlombok:lombok:1.18.30")
+	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1")
+
 }
 
 tasks.withType<Test> {

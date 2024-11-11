@@ -4,14 +4,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.UserDTO;
 import com.example.demo.model.MyUser;
 import com.example.demo.service.UserService;
+
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 
@@ -26,6 +31,12 @@ public class UserController {
     @PostMapping("/register")
     public MyUser register(@RequestParam String login, @RequestParam String passwordHash) {
         return userService.registerUser(login, passwordHash);
+    }
+
+    @PostMapping("/register1")
+    public ResponseEntity<UserDTO> register1(@Valid @RequestBody UserDTO userDTO) {
+        if (userDTO.getLogin() == null || userDTO.getPasswordHash() == null) return ResponseEntity.badRequest().body(userDTO);
+        return ResponseEntity.ok().body(userService.registerUser(userDTO));
     }
 
     @GetMapping("/balance")
@@ -44,4 +55,9 @@ public class UserController {
         return userService.partialUpdateUserData(login, fullName, email, gender, birthDate);
     }
     
+    @PatchMapping("/update1")
+    public ResponseEntity<UserDTO> partialUpdateUserData(@Valid @RequestBody UserDTO userDTO) {
+        if (userDTO.getLogin() == null) return ResponseEntity.badRequest().body(userDTO);
+        return ResponseEntity.ok().body(userService.partialUpdateUserData(userDTO));
+    }
 }

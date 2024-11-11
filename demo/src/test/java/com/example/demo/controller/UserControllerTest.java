@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,8 +24,11 @@ import java.util.Optional;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
+import com.example.demo.dto.UserDTO;
 import com.example.demo.model.MyUser;
 import com.example.demo.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +42,10 @@ public class UserControllerTest {
     private UserService userService;
 
     private MyUser testUser;
+
+    private final String apiRegister = "/users/register";
+    private final String apiBalance = "/users/balance";
+    private final String apiUpdate = "/users/update";
 
     @BeforeEach
     void setUp() {
@@ -54,7 +63,7 @@ public class UserControllerTest {
     void testRegisterUser_Success() throws Exception {
         when(userService.registerUser(anyString(), anyString())).thenReturn(testUser);
 
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post(apiRegister)
                         .param("login", "testuser")
                         .param("passwordHash", "password123"))
                 .andExpect(status().isOk())
@@ -64,7 +73,7 @@ public class UserControllerTest {
 
     @Test
     void testRegisterUser_Failure() throws Exception {
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post(apiRegister)
                         .param("login", "")
                         .param("passwordHash", "password123"));
     }
@@ -74,7 +83,7 @@ public class UserControllerTest {
     void testGetBalance_UserFound() throws Exception {
         when(userService.getUserByLogin("testuser")).thenReturn(Optional.of(testUser));
 
-        mockMvc.perform(get("/users/balance")
+        mockMvc.perform(get(apiBalance)
                         .param("login", "testuser"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Баланс пользователя testuser: " + testUser.getBalance()));
@@ -85,7 +94,7 @@ public class UserControllerTest {
     void testGetBalance_UserNotFound() throws Exception {
         when(userService.getUserByLogin("nonexistentuser")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/users/balance")
+        mockMvc.perform(get(apiBalance)
                         .param("login", "nonexistentuser"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Пользователь не найден"));
@@ -99,7 +108,7 @@ public class UserControllerTest {
         when(userService.partialUpdateUserData("testuser", "Updated Name", null, null, null))
                 .thenReturn(updataedUser);
 
-        mockMvc.perform(patch("/users/update")
+        mockMvc.perform(patch(apiUpdate)
                         .param("login", "testuser")
                         .param("fullName", "Updated Name"))
                 .andExpect(status().isOk())
@@ -117,7 +126,7 @@ public class UserControllerTest {
         when(userService.partialUpdateUserData("testuser", null, "updated@example.com", null, null))
                 .thenReturn(updataedUser);
 
-        mockMvc.perform(patch("/users/update")
+        mockMvc.perform(patch(apiUpdate)
                         .param("login", "testuser")
                         .param("email", "updated@example.com"))
                 .andExpect(status().isOk())
@@ -129,16 +138,55 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", password = "testpassword")
-    void testPartialUpdateUserData_UserNotFound() throws Exception {
-        when(userService.partialUpdateUserData(any(), any(), any(), any(), any()))
-                .thenThrow(new IllegalArgumentException("Пользователь не найден"));
+    void testPartialUpdateUserData_EmailUpdated1() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setLogin("testuser");
+        userDTO.setEmail("old@example.com");
 
-        mockMvc.perform(patch("/users/update")
-                        .param("login", "nonexistentuser")
-                        .param("fullName", "Updated Name")
-                        .param("email", "updated@example.com")
-                        .param("gender", "F")
-                        .param("birthDate", "1990-12-31"))
+        UserDTO updatedUserDTO = new UserDTO();
+        updatedUserDTO.setLogin("testuser");
+        updatedUserDTO.setEmail("new@example.com");
+
+        when(userService.partialUpdateUserData(userDTO)).thenReturn(updatedUserDTO);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonRequest = objectMapper.writeValueAsString(userDTO);
+
+        mockMvc.perform(patch("/users/update1")
+                        .contentType(MediaType.APPLICATION_JSON) 
+                        .content(jsonRequest))        
+                .andExpect(status().isOk()) 
+                .andExpect(jsonPath("$.email").value("new@example.com"));
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
+    void testPartialUpdateUserData_LoginMissing() throws Exception {
+        UserDTO invalidUserDTO = new UserDTO();
+        invalidUserDTO.setEmail("updated@example.com");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonRequest = objectMapper.writeValueAsString(invalidUserDTO);
+
+        mockMvc.perform(patch("/users/update1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isBadRequest());  
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", password = "testpassword")
+    void testPartialUpdateUserData_UserNotFound() throws Exception {
+        when(userService.partialUpdateUserData(any())).thenThrow(new IllegalArgumentException("Пользователь не найден"));
+
+        UserDTO userDTO = new UserDTO(testUser);
+        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().modulesToInstall(new JavaTimeModule()).build();
+        String jsonRequest = objectMapper.writeValueAsString(userDTO);
+
+        userDTO.setLogin("nonexistentuser");
+        mockMvc.perform(patch("/users/update1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Пользователь не найден"));
     }

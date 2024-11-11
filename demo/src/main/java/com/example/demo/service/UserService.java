@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.repository.UserRepository;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.model.MyUser;
 
 @Service
@@ -43,5 +44,23 @@ public class UserService {
         return userRepository.save(user);          
     }
 
+    public UserDTO registerUser(UserDTO userDTO) {
+        MyUser user = new MyUser(userDTO);
+        user.setBalance(startBalance);
+        return new UserDTO(userRepository.save(user));
+    }
+
+    public UserDTO partialUpdateUserData(UserDTO userDTO) {
+        Optional<MyUser> userOpt = userRepository.findByLogin(userDTO.getLogin());
+        if (!userOpt.isPresent()) throw new IllegalArgumentException("Пользователь не найден");
+        MyUser user = userOpt.get();
+
+        if (userDTO.getFullName() != null) user.setFullName(userDTO.getFullName());
+        if (userDTO.getEmail() != null) user.setEmail(userDTO.getEmail() );
+        if (userDTO.getGender() != null) user.setGender(userDTO.getGender() );
+        if (userDTO.getBirthDate() != null) user.setBirthDate(userDTO.getBirthDate());
+
+        return new UserDTO(userRepository.save(user));
+    }
 
 }

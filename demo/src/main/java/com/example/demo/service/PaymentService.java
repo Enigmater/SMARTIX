@@ -31,7 +31,7 @@ public class PaymentService {
         Payment payment = new Payment();
         payment.setPhoneNumber(phoneNumber);
         payment.setAmount(amount); 
-        payment.setDate(java.time.LocalDateTime.now());
+        payment.setDateTime(java.time.LocalDateTime.now());
         payment.setUser(user);
 
         paymentRepository.save(payment);

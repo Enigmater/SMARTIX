@@ -54,7 +54,7 @@ public class PaymentControllerTest {
         testPayment.setPhoneNumber("1234567890");
         testPayment.setAmount(new BigDecimal(50));
         testPayment.setUser(testUser);
-        testPayment.setDate(java.time.LocalDateTime.now());
+        testPayment.setDateTime(java.time.LocalDateTime.now());
     }
 
     @Test

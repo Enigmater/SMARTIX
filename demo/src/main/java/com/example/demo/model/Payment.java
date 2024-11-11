@@ -20,7 +20,7 @@ public class Payment {
 
     @Column(precision = 10, scale = 2)
     private BigDecimal amount;
-    private LocalDateTime date;
+    private LocalDateTime dateTime;
 
     // By default loading is eager
     @ManyToOne(fetch = FetchType.LAZY)
